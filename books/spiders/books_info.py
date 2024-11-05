@@ -19,7 +19,7 @@ class BooksInfoSpider(scrapy.Spider):
         super().__init__(**kwargs)
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
-        self.driver = webdriver.Chrome()
+        self.driver = webdriver.Chrome(options=options)
 
     def close(self, reason) -> None:
         self.driver.close()
@@ -34,7 +34,9 @@ class BooksInfoSpider(scrapy.Spider):
 
     def _get_num_available_books(self, text: str) -> int:
         match = re.search(r'\((\d+) available\)', text)
-        return int(match.group(1))
+        if match:
+            return int(match.group(1))
+        return 0
 
     def parse_detail_page(self, response: Response, book: Selector) -> dict[str, Any]:
         detailed_url = response.urljoin(book.css("h3 > a::attr(href)").get())
